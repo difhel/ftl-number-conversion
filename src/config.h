@@ -12,19 +12,6 @@ namespace config {
         const std::string title = "FTL fourth prac";
         const int button_margin = 20;
         const int button_width = 330;
-        std::map<std::string, std::string> buttons_config = {
-            // {"test_dialog", "A Test dialog"},
-            {"insert_after_line", "Insert after line"},
-            {"multiple_insert_after_line", "Multiple insert after line"},
-            {"delete_line", "Delete line"},
-            {"insert_substr_in_line", "Insert substring in line"},
-            {"replace_symbol", "Replace symbol"},
-            {"replace", "Replace"},
-            {"remove_zeros", "Remove leading zeros"},
-            {"remove_numbers", "Remove non-increasing numbers"},
-            {"replace_*_+", "Replace group of * with +"},
-            {"remove_{}", "Remove everything in curly braces"}
-        };
     } // namespace window
 
     namespace color {

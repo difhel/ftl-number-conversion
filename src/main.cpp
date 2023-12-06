@@ -11,15 +11,16 @@
 
 std::map<std::string, Button*> buttons;
 std::map<std::string, TextEditor*> inputs;
-std::string active_editor = "";
+std::string active_editor = ""; // id of active TextEditor
+std::map<std::string, std::string> inputs_data;
 
 void render(sf::RenderWindow &window, Layout &layout) {
+    // render the layout
     sf::Font font;
     font.loadFromFile("../font.ttf");
     int last_y = config::window::button_margin;
     int x = config::window::button_margin;
     for (auto element : layout.build()) {
-        // std::cout << "Rendering window with " << element.type << std::endl;
         int last_element_height = 50;
         if (element.type == "Button") {
             buttons[element.id] = new Button(
@@ -43,15 +44,27 @@ void render(sf::RenderWindow &window, Layout &layout) {
 }
 
 void show(sf::RenderWindow &window) {
+    // show previously rendered layout
     window.clear(config::color::background);
     for (auto button : buttons) {
         button.second->draw(window);
     }
     for (auto input : inputs) {
-        // std::cout << "(dialog) input " << input.second << " rerendered" << std::endl;
         input.second->draw(window);
     }
     window.display();
+}
+
+void parseInputs() {
+    for (auto input : inputs) {
+        std::string input_text = "";
+        for (std::string* line : input.second->lines) {
+            input_text += *line;
+            input_text += '\n';
+        }
+        if (!input_text.empty()) input_text.erase(input_text.end() - 1);
+        inputs_data[input.first] = input_text;
+    }
 }
 
 int main() {
@@ -65,17 +78,16 @@ int main() {
     layout.addElement(DialogElement("TextEditor", "", "p"));
     layout.addElement(DialogElement("Label", "Enter q:", "label_4"));
     layout.addElement(DialogElement("TextEditor", "", "q"));
-    layout.addElement(DialogElement("Button", "Run", "button"));
-    // Dialog dialog("Insert substring in line", layout, callback_insert_substr_in_line, window, editor);
+    layout.addElement(DialogElement("Button", "Run", "run_button"));
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), config::window::title);
+    sf::RenderWindow window(sf::VideoMode(400, 600), config::window::title);
     sf::Font font;
     font.loadFromFile("../font.ttf");
     render(window, layout);
     show(window);
-    // button.buttonShape.setRadius(30);
 
     while (window.isOpen()) {
+        // event loop
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -86,7 +98,6 @@ int main() {
                 // update the view to the new size of the window
                 sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(visibleArea));
-                // editor.draw(window);
                 render(window, layout);
             }
 
@@ -94,14 +105,16 @@ int main() {
                 std::cout << "MouseButtonPressed\n";
                 for (auto button : buttons) {
                     if ((*(button.second)).isMouseOver(window)) {
-                        // Код, который выполняется при нажатии на кнопку
-                        // Здесь можно добавить логику обработки нажатия кнопки
+                        // button click event
                         std::cout << button.first + " button pressed" << std::endl;
-                        if (button.first == "button") {
+                        if (button.first == "run_button") {
+                            parseInputs();
+                            std::string res = callback_test_dialog(window, inputs_data);
+
                             Layout layout;
                             layout.addElement(DialogElement("Label", "Result:", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "1", "n"));
-                            Dialog dialog("Insert substring in line", layout, callback_insert_substr_in_line, window);
+                            layout.addElement(DialogElement("Label", res, "result"));
+                            Dialog dialog("Insert substring in line", layout, callback_empty, window);
                             dialog.generate();
                             dialog.show();
                             dialog.start_polling();
