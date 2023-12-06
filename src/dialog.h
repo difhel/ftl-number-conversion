@@ -10,7 +10,7 @@
 
 class Dialog {
     public:
-        Dialog(std::string title, Layout layout, std::function<void(sf::RenderWindow&, std::map<std::string, std::string>, TextEditor&)> callback_function, sf::RenderWindow &parent_window, TextEditor &text_editor) : parent_window{parent_window}, text_editor{text_editor} {
+        Dialog(std::string title, Layout layout, std::function<void(sf::RenderWindow&, std::map<std::string, std::string>)> callback_function, sf::RenderWindow &parent_window) : parent_window{parent_window} {
             this->callback_function = callback_function;
             this->inputs = inputs;
             this->title = title;
@@ -31,7 +31,7 @@ class Dialog {
                 if (!input_text.empty()) input_text.erase(input_text.end() - 1);
                 this->inputs_data[input.first] = input_text;
             }
-            this->callback_function(this->parent_window, this->inputs_data, this->text_editor);
+            this->callback_function(this->parent_window, this->inputs_data);
         }
         void start_polling() {
             while (this->dialog_window->isOpen()) {
@@ -119,10 +119,9 @@ class Dialog {
         std::map<std::string, TextEditor*> inputs;
         std::map<std::string, Button*> buttons;
         std::map<std::string, std::string> inputs_data;
-        std::function<void(sf::RenderWindow&, std::map<std::string, std::string>, TextEditor&)> callback_function;
+        std::function<void(sf::RenderWindow&, std::map<std::string, std::string>)> callback_function;
         sf::RenderWindow* dialog_window;
         sf::RenderWindow &parent_window;
-        TextEditor &text_editor;
         std::string active_editor = "";
 };
 

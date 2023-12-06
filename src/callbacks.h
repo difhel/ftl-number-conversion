@@ -27,12 +27,11 @@ void callback_empty(
 
 void callback_insert_substr_in_line(
     sf::RenderWindow &window,
-    std::map<std::string, std::string> input_data,
-    TextEditor &editor) {
-    int n = std::stoi(input_data["n"]);
-    int m = std::stoi(input_data["m"]);
-    std::string substr = input_data["substr"];
-    insertSubstring(editor.lines, n, m, substr);
+    std::map<std::string, std::string> input_data) {
+    // int n = std::stoi(input_data["n"]);
+    // int m = std::stoi(input_data["m"]);
+    // std::string substr = input_data["substr"];
+    // insertSubstring(editor.lines, n, m, substr);
 }
 
 void callback_remove_leading_zeros(

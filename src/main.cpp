@@ -10,30 +10,69 @@
 #define MALLOC_CHECK_ 2
 
 std::map<std::string, Button*> buttons;
+std::map<std::string, TextEditor*> inputs;
+std::string active_editor = "";
 
-void render(sf::RenderWindow &window, sf::Font &font, TextEditor &editor) {
-    int last_button_y = config::window::button_margin;
-    int buttons_x = window.getSize().x - config::window::button_width - config::window::button_margin;
-    buttons.clear();
-    for (auto button_config : config::window::buttons_config) {
-        buttons[button_config.first] = new Button(
-            sf::Vector2f(buttons_x, last_button_y),
-            sf::Vector2f(config::window::button_width, 50),
-            button_config.second);
-        last_button_y = last_button_y + 50 + config::window::button_margin;
+void render(sf::RenderWindow &window, Layout &layout) {
+    sf::Font font;
+    font.loadFromFile("../font.ttf");
+    int last_y = config::window::button_margin;
+    int x = config::window::button_margin;
+    for (auto element : layout.build()) {
+        // std::cout << "Rendering window with " << element.type << std::endl;
+        int last_element_height = 50;
+        if (element.type == "Button") {
+            buttons[element.id] = new Button(
+                sf::Vector2f(x, last_y),
+                sf::Vector2f(config::window::button_width, 50),
+                element.text);
+        }
+        if (element.type == "Label") {
+            buttons[element.id] = new Button(
+                sf::Vector2f(x, last_y),
+                sf::Vector2f(config::window::button_width, 20),
+                element.text,
+                true);
+            last_element_height = 20;
+        }
+        if (element.type == "TextEditor") {
+            inputs[element.id] = new TextEditor(24, config::window::button_width, 50, x, last_y, false);
+        }
+        last_y += last_element_height + config::window::button_margin;
     }
+}
+
+void show(sf::RenderWindow &window) {
     window.clear(config::color::background);
-    for (auto button : buttons) (*(button.second)).draw(window);
-    editor.draw(window);
+    for (auto button : buttons) {
+        button.second->draw(window);
+    }
+    for (auto input : inputs) {
+        // std::cout << "(dialog) input " << input.second << " rerendered" << std::endl;
+        input.second->draw(window);
+    }
     window.display();
 }
+
 int main() {
     std::locale::global(std::locale("C.utf8"));
+
+    Layout layout;
+    layout.addElement(DialogElement("Label", "Universal convertor", "label_1"));
+    layout.addElement(DialogElement("Label", "Enter number:", "label_2"));
+    layout.addElement(DialogElement("TextEditor", "", "n"));
+    layout.addElement(DialogElement("Label", "Enter p:", "label_3"));
+    layout.addElement(DialogElement("TextEditor", "", "p"));
+    layout.addElement(DialogElement("Label", "Enter q:", "label_4"));
+    layout.addElement(DialogElement("TextEditor", "", "q"));
+    layout.addElement(DialogElement("Button", "Run", "button"));
+    // Dialog dialog("Insert substring in line", layout, callback_insert_substr_in_line, window, editor);
+
     sf::RenderWindow window(sf::VideoMode(800, 600), config::window::title);
     sf::Font font;
     font.loadFromFile("../font.ttf");
-    TextEditor editor(24, 800, 600, 0, 0, true);
-    render(window, font, editor);
+    render(window, layout);
+    show(window);
     // button.buttonShape.setRadius(30);
 
     while (window.isOpen()) {
@@ -48,7 +87,7 @@ int main() {
                 sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(visibleArea));
                 // editor.draw(window);
-                render(window, font, editor);
+                render(window, layout);
             }
 
             if (event.type == sf::Event::MouseButtonPressed) {
@@ -58,124 +97,31 @@ int main() {
                         // Код, который выполняется при нажатии на кнопку
                         // Здесь можно добавить логику обработки нажатия кнопки
                         std::cout << button.first + " button pressed" << std::endl;
-                        if (button.first == "insert_substr_in_line") {
+                        if (button.first == "button") {
                             Layout layout;
-                            layout.addElement(DialogElement("Label", "Line number (N)", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "n"));
-                            layout.addElement(DialogElement("Label", "Symbol number (M)", "label_2"));
-                            layout.addElement(DialogElement("TextEditor", "", "m"));
-                            layout.addElement(DialogElement("Label", "Substring to insert", "label_3"));
-                            layout.addElement(DialogElement("TextEditor", "", "substr"));
-                            Dialog dialog("Insert substring in line", layout, callback_insert_substr_in_line, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "remove_zeros") {
-                            Layout layout;
-                            layout.addElement(DialogElement("Label", "First line (n)", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "n"));
-                            layout.addElement(DialogElement("Label", "Last line (m)", "label_2"));
-                            layout.addElement(DialogElement("TextEditor", "", "m"));
-                            Dialog dialog("Remove leading zeros", layout, callback_remove_leading_zeros, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "replace_symbol") {
-                            Layout layout;
-                            layout.addElement(DialogElement("Label", "Line number (n)", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "n"));
-                            layout.addElement(DialogElement("Label", "Symbol number (m)", "label_2"));
-                            layout.addElement(DialogElement("TextEditor", "", "m"));
-                            layout.addElement(DialogElement("Label", "Symbol to replace", "label_3"));
-                            layout.addElement(DialogElement("TextEditor", "", "c"));
-                            Dialog dialog("Replace symbol", layout, callback_replace_symbol, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "delete_line") {
-                            Layout layout;
-                            layout.addElement(DialogElement("Label", "Line to delete (n)", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "n"));
-                            Dialog dialog("Delete line", layout, callback_delete_line, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "test_dialog") {
-                            Layout layout;
-                            DialogElement le1("Label", "Test button", "1");
-                            layout.addElement(le1);
-                            DialogElement le2("TextEditor", "Test button", "2");
-                            DialogElement le3("TextEditor", "Test button", "3");
-                            layout.addElement(le2);
-                            layout.addElement(le3);
-                            
-                            Dialog dialog("Test dialog", layout, callback_test_dialog, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "insert_after_line") {
-                            Layout layout;
-                            layout.addElement(DialogElement("Label", "Insert after line (n)", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "n"));
-                            layout.addElement(DialogElement("Label", "One line to insert", "label_2"));
-                            layout.addElement(DialogElement("TextEditor", "", "lines"));
-                            Dialog dialog("Insert line", layout, callback_multiple_insert_after_line, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "remove_numbers") {
-                            callback_remove_non_increasing(window, {}, editor);
-                        }
-                        if (button.first == "remove_{}") {
-                            Layout layout;
-                            layout.addElement(DialogElement("Label", "Line to remove {...} (n)", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "n"));
-                            Dialog dialog("Remove {...}", layout, callback_remove_braces, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "replace") {
-                            Layout layout;
-                            layout.addElement(DialogElement("Label", "First line (n) (default 1)", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "n"));
-                            layout.addElement(DialogElement("Label", "Last line (m) (default MAX_LINE)", "label_2"));
-                            layout.addElement(DialogElement("TextEditor", "", "m"));
-                            layout.addElement(DialogElement("Label", "Replace ...", "label_3"));
-                            layout.addElement(DialogElement("TextEditor", "", "what"));
-                            layout.addElement(DialogElement("Label", "Replace to ...", "label_4"));
-                            layout.addElement(DialogElement("TextEditor", "", "to"));
-                            Dialog dialog("Replace", layout, callback_replace, window, editor);
-                            dialog.generate();
-                            dialog.show();
-                            dialog.start_polling();
-                        }
-                        if (button.first == "replace_*_+") {
-                            Layout layout;
-                            layout.addElement(DialogElement("Label", "Char *", "label_1"));
-                            layout.addElement(DialogElement("TextEditor", "", "c1"));
-                            layout.addElement(DialogElement("Label", "Char +", "label_2"));
-                            layout.addElement(DialogElement("TextEditor", "", "c2"));
-                            Dialog dialog("Replace * to +", layout, callback_replace_stars, window, editor);
+                            layout.addElement(DialogElement("Label", "Result:", "label_1"));
+                            layout.addElement(DialogElement("TextEditor", "1", "n"));
+                            Dialog dialog("Insert substring in line", layout, callback_insert_substr_in_line, window);
                             dialog.generate();
                             dialog.show();
                             dialog.start_polling();
                         }
                     }
                 }
+                for (auto input : inputs) {
+                    if ((*(input.second)).isMouseOver(window)) {
+                        std::cout << "(dialog) " << input.first + " text edit activated" << std::endl;
+                        active_editor = input.first;
+                    }
+                }
             }
 
             if (event.type == sf::Event::TextEntered || event.type == sf::Event::KeyPressed) {              
-                editor.handleInput(event);
-                editor.update();
+                if (active_editor == "") continue;
+                    inputs[active_editor]->handleInput(event);
+                    inputs[active_editor]->update();
             }
-            render(window, font, editor);
+            show(window);
         }
     }
 
