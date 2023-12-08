@@ -30,6 +30,7 @@ class BigInt {
                 digits.push_back(n % 10);
                 n /= 10;
             }
+            if (digits.size() == 0) digits.push_back(0);
             std::reverse(digits.begin(), digits.end());
         }
         // constructor with int and radix
@@ -38,6 +39,7 @@ class BigInt {
                 digits.push_back(n % radix);
                 n /= radix;
             }
+            if (digits.size() == 0) digits.push_back(0);
             std::reverse(digits.begin(), digits.end());
         }
 
@@ -158,6 +160,7 @@ class BigInt {
 
         void remove_leading_zeroes() {
             while (digits.size() > 1 && digits[0] == 0) digits.erase(digits.begin());
+            if (digits.size() == 0) digits.push_back(0);
         }
         // write operator* using Karatsuba algorithm
         BigInt operator*(const BigInt& other) const {
@@ -197,5 +200,75 @@ class BigInt {
             res.normalize();
             res.remove_leading_zeroes();
             return res;
+        }
+
+        // write operator==
+        bool operator==(const BigInt& other) const {
+            if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
+            if (digits.size() != other.digits.size()) return false;
+            for (int i = 0; i < digits.size(); i++) {
+                if (digits[i] != other.digits[i]) return false;
+            }
+            return true;
+        }
+        // write operator<
+        bool operator<(const BigInt& other) const {
+            if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
+            if (digits.size() != other.digits.size()) return digits.size() < other.digits.size();
+            for (int i = 0; i < digits.size(); i++) {
+                if (digits[i] != other.digits[i]) return digits[i] < other.digits[i];
+            }
+            return false;
+        }
+        // write operator>
+        bool operator>(const BigInt& other) const {
+            return !(operator==(other) || operator<(other));
+        }
+        bool operator>=(const BigInt& other) const {
+            return operator>(other) || operator==(other);
+        }
+        bool operator<=(const BigInt& other) const {
+            return operator<(other) || operator==(other);
+        }
+        // write operator/ for int using long division
+        BigInt operator/(int n) const {
+            if (n == 0) throw std::invalid_argument("division by zero");
+            BigInt bi_a(*this);
+            bi_a.normalize();
+            bi_a.remove_leading_zeroes();
+            BigInt res({}, bi_a.radix);
+            int carry = 0;
+            for (int i = 0; i < bi_a.digits.size(); i++) {
+                int cur = bi_a.digits[i] + carry * bi_a.radix;
+                res.digits.push_back(cur / n);
+                carry = cur % n;
+            }
+            res.normalize();
+            res.remove_leading_zeroes();
+            return res;
+        }
+        // write operator/ (binary search for answer using operator*)
+        BigInt operator/(const BigInt& other) const {
+            if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
+            BigInt bi_a(*this);
+            BigInt bi_b(other);
+            bi_a.normalize();
+            bi_b.normalize();
+            bi_a.remove_leading_zeroes();
+            bi_b.remove_leading_zeroes();
+            if (bi_b == BigInt(0, radix)) throw std::invalid_argument("division by zero");
+            if (bi_a < bi_b) return BigInt(0, radix);
+            BigInt l(0, radix);
+            BigInt r = BigInt(bi_a) + BigInt(1, radix);
+            BigInt m;
+            while (r - l > 1) {
+                m = (l + r) / 2;
+                if (m * bi_b <= bi_a) {
+                    l = m;
+                } else {
+                    r = m;
+                }
+            }
+            return l;
         }
 };
