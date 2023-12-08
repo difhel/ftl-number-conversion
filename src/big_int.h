@@ -9,7 +9,7 @@ class BigInt {
     int radix;
     public:
         // default constructor
-        BigInt() : digits({}), radix(10) {};
+        BigInt() : digits({0}), radix(10) {};
         // copy constructor
         BigInt(const BigInt& other) : digits(other.digits), radix(other.radix) {}
         // constructor with digits
@@ -229,6 +229,19 @@ class BigInt {
         }
         bool operator<=(const BigInt& other) const {
             return operator<(other) || operator==(other);
+        }
+        // write operator% using operator/ and operator-
+        BigInt operator%(const BigInt& other) const {
+            if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
+            BigInt bi_a(*this);
+            BigInt bi_b(other);
+            bi_a.normalize();
+            bi_b.normalize();
+            bi_a.remove_leading_zeroes();
+            bi_b.remove_leading_zeroes();
+            if (bi_b == BigInt(0, radix)) throw std::invalid_argument("division by zero");
+            if (bi_a < bi_b) return bi_a;
+            return bi_a - (bi_a / bi_b) * bi_b;
         }
         // write operator/ for int using long division
         BigInt operator/(int n) const {
