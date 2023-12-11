@@ -44,27 +44,10 @@ class BigFrac {
             this->isNegative = false;
             this->radix = 10;
         }
+        // constructor with string
+        BigFrac(std::string s) {
+            bool isNegative = false; // (без токса)
 
-        friend std::ostream& operator<<(std::ostream& os, const BigFrac& bf) {
-            if (bf.isNegative) os << "-";
-            os << bf.int_part;
-            if (bf.has_period || bf.has_float_part) os << ".";
-            if (bf.has_float_part) os << bf.float_part;
-            if (bf.has_period) os << "(" << bf.period << ")";
-            os << " (radix: " << bf.radix << ") ";
-            return os;
-        }
-
-        friend std::istream& operator>>(std::istream& is, BigFrac& bf) {
-            /*
-            Input BigInt in formats:
-            - 123[13]ABCD - in 10 radix (by default)
-            - 123[13]ABCD_16 - in 16 radix
-            */
-            std::string s;
-            is >> s;
-
-            bool isNegative = false;
             if (s[0] == '-') {
                 isNegative = true;
                 s = s.substr(1);
@@ -116,7 +99,34 @@ class BigFrac {
             }
             int_part = BigInt(stringToVectorInt(s, radix_int), radix_int);
 
-            bf = BigFrac(int_part, float_part, period, isNegative, has_period, has_float_part, radix_int);
+            this->int_part = int_part;
+            this->float_part = float_part;
+            this->period = period;
+            this->isNegative = isNegative;
+            this->radix = radix_int;
+            this->has_period = has_period;
+            this->has_float_part = has_float_part;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const BigFrac& bf) {
+            if (bf.isNegative) os << "-";
+            os << bf.int_part;
+            if (bf.has_period || bf.has_float_part) os << ".";
+            if (bf.has_float_part) os << bf.float_part;
+            if (bf.has_period) os << "(" << bf.period << ")";
+            os << " (radix: " << bf.radix << ") ";
+            return os;
+        }
+
+        friend std::istream& operator>>(std::istream& is, BigFrac& bf) {
+            /*
+            Input BigInt in formats:
+            - 123[13]ABCD - in 10 radix (by default)
+            - 123[13]ABCD_16 - in 16 radix
+            */
+            std::string s;
+            is >> s;
+            bf = BigFrac(s);
             return is;
         }
 };
