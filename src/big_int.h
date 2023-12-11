@@ -174,7 +174,11 @@ class BigInt {
             bi_b.remove_leading_zeroes();
             int n = std::max(bi_a.digits.size(), bi_b.digits.size());
             if (n == 0) return BigInt(0, radix);
-            if (n == 1) return BigInt(std::vector<int>{bi_a.digits[0] * bi_b.digits[0]}, radix);
+            if (n == 1) {
+                BigInt answer(std::vector<int>{bi_a.digits[0] * bi_b.digits[0]}, radix);
+                answer.normalize();
+                return answer;
+            }
             if (n % 2 == 1) n++;
             bi_a.fillToSize(n);
             bi_b.fillToSize(n);
@@ -274,7 +278,8 @@ class BigInt {
             BigInt l(0, radix);
             BigInt r = BigInt(bi_a) + BigInt(1, radix);
             BigInt m;
-            while (r - l > 1) {
+            BigInt one(1, radix);
+            while (r - l > one) {
                 m = (l + r) / 2;
                 if (m * bi_b <= bi_a) {
                     l = m;
@@ -283,5 +288,73 @@ class BigInt {
                 }
             }
             return l;
+        }
+        int toInt() {
+            // WARN!!! This may cause overflow
+            int res = 0;
+            for (int i = 0; i < digits.size(); i++) {
+                res *= radix;
+                res += digits[i];
+            }
+            return res;
+        }
+        // write function to translate to another radix
+        BigInt translate_from_10(int new_radix) const {
+            BigInt bi_a(*this);
+            bi_a.normalize();
+            bi_a.remove_leading_zeroes();
+            if (new_radix == bi_a.radix) return bi_a;
+            std::vector<int> new_digits;
+            BigInt radix(new_radix, bi_a.radix);
+            BigInt zero(0, bi_a.radix);
+            while (bi_a > zero) {
+                BigInt cur = bi_a % radix;
+                // std::cout << cur << std::endl;
+                new_digits.insert(new_digits.begin(), cur.toInt());
+                bi_a = bi_a / radix;
+            }
+            BigInt res(new_digits, new_radix);
+            // res.normalize();
+            res.remove_leading_zeroes();
+            return res;
+        }
+        BigInt pow(int n) const {
+            BigInt bi_a(*this);
+            bi_a.normalize();
+            bi_a.remove_leading_zeroes();
+            BigInt res(1, bi_a.radix);
+            while (n) {
+                if (n & 1) {
+                    res = res * bi_a;
+                }
+                bi_a = bi_a * bi_a;
+                n >>= 1;
+            }
+            res.normalize();
+            res.remove_leading_zeroes();
+            return res;
+        }
+        BigInt translate_to_10() const {
+            BigInt bi_a(*this);
+            bi_a.normalize();
+            bi_a.remove_leading_zeroes();
+            if (bi_a.radix == 10) return bi_a;
+            BigInt res(0, 10);
+            BigInt radix(bi_a.radix, 10);
+            for (int i = 0; i < bi_a.digits.size(); i++) {
+                BigInt powResult = radix.pow(bi_a.digits.size() - i - 1);
+                res = res + BigInt(bi_a.digits[i], 10) * powResult;
+            }
+            res.normalize();
+            res.remove_leading_zeroes();
+            return res;
+        }
+        void print() {
+            for (int i = 0; i < digits.size(); i++) {
+                // write code to transcript digits in int to letters (10 -> A)
+                if (digits[i] >= 10) {
+                    std::cout << (char)('A' + digits[i] - 10);
+                } else std::cout << digits[i];
+            }
         }
 };

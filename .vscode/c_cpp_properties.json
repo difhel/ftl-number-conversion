@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/**",
                 "${workspaceFolder}/src",
-                "~/ftl/ftl-ss/src/"
+                "~/ftl/ftl-ss/src/",
+                "${workspaceFolder}/src"
             ],
             "defines": [],
             "configurationProvider": "ms-vscode.cmake-tools",

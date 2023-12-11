@@ -3,8 +3,7 @@
 using namespace std;
 int main() {
     BigInt x;
-    int y;
-    cin >> x >> y;
-    BigInt z = x.translate_from_10(y);
+    cin >> x;
+    BigInt z = x.translate_to_10();
     z.print();
 }
