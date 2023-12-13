@@ -45,6 +45,7 @@ class BigFrac {
             // std::cout << std::endl;
             // reduce the fractions on gcd() of them
             BigInt gcd = new_num.gcd(new_den);
+            std::cout << "got gcd" << std::endl;
             new_num = new_num / gcd;
             new_den = new_den / gcd;
             this->num = new_num + int_part * new_den;
@@ -157,5 +158,33 @@ class BigFrac {
             this->num = num.translate(q);
             this->den = den.translate(q);
             this->radix = q;
+        }
+        
+        // write std::string toString() method
+        std::string toString() {
+            BigInt bi_radix = BigInt(radix, radix);
+            std::string s = "";
+            if (isNegative) s += "-";
+            s += (num / den).toString();
+            if (!(has_period || has_float_part)) return s;
+            s += ".";
+            BigInt remainder = num % den;
+            // if (!has_period) return s + remainder.toString();
+            // s += "(";
+            std::map<BigInt, int> remainderMap; // Map to store remainders and their positions
+
+            while (remainder != BigInt(0, remainder.radix) && remainderMap.find(remainder) == remainderMap.end()) {
+                // Mark the current remainder and its position
+                remainderMap[remainder] = s.length();
+
+                remainder = remainder * bi_radix;
+                s += (remainder / den).toString();
+                remainder = remainder % den;
+            }
+            if (remainder != BigInt(0, remainder.radix)) {
+                s.insert(remainderMap[remainder], 1, '(');
+                s += ")";
+            }
+            return s;
         }
 };

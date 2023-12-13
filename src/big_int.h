@@ -8,6 +8,7 @@ class BigInt {
     public:
         std::vector<int> digits;
         int radix;
+        ~BigInt() = default;
         // default constructor
         BigInt() : digits({0}), radix(10) {};
         // copy constructor
@@ -165,14 +166,15 @@ class BigInt {
         }
         // write operator* using Karatsuba algorithm
         BigInt operator*(const BigInt& other) const {
+            // std::cout << "operator *" << std::endl;
             if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
             // std::vector<int> res;
             BigInt bi_a(*this);
             BigInt bi_b(other);
-            bi_a.normalize();
-            bi_b.normalize();
-            bi_a.remove_leading_zeroes();
-            bi_b.remove_leading_zeroes();
+            // bi_a.normalize();
+            // bi_b.normalize();
+            // bi_a.remove_leading_zeroes();
+            // bi_b.remove_leading_zeroes();
             int n = std::max(bi_a.digits.size(), bi_b.digits.size());
             if (n == 0) return BigInt(0, radix);
             if (n == 1) {
@@ -216,6 +218,9 @@ class BigInt {
             }
             return true;
         }
+        bool operator!=(const BigInt& other) const {
+            return !operator==(other);
+        }
         // write operator<
         bool operator<(const BigInt& other) const {
             if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
@@ -240,20 +245,21 @@ class BigInt {
             if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
             BigInt bi_a(*this);
             BigInt bi_b(other);
-            bi_a.normalize();
-            bi_b.normalize();
-            bi_a.remove_leading_zeroes();
-            bi_b.remove_leading_zeroes();
+            // bi_a.normalize();
+            // bi_b.normalize();
+            // bi_a.remove_leading_zeroes();
+            // bi_b.remove_leading_zeroes();
             if (bi_b == BigInt(0, radix)) throw std::invalid_argument("division by zero");
             if (bi_a < bi_b) return bi_a;
             return bi_a - (bi_a / bi_b) * bi_b;
         }
         // write operator/ for int using long division
         BigInt operator/(int n) const {
+            // std::cout << "operator / (int)" << std::endl;
             if (n == 0) throw std::invalid_argument("division by zero");
             BigInt bi_a(*this);
-            bi_a.normalize();
-            bi_a.remove_leading_zeroes();
+            // bi_a.normalize();
+            // bi_a.remove_leading_zeroes();
             BigInt res({}, bi_a.radix);
             int carry = 0;
             for (int i = 0; i < bi_a.digits.size(); i++) {
@@ -261,12 +267,13 @@ class BigInt {
                 res.digits.push_back(cur / n);
                 carry = cur % n;
             }
-            res.normalize();
-            res.remove_leading_zeroes();
+            // res.normalize();
+            // res.remove_leading_zeroes();
             return res;
         }
         // write operator/ (binary search for answer using operator*)
         BigInt operator/(const BigInt& other) const {
+            // std::cout << "operator /" << std::endl;
             if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
             BigInt bi_a(*this);
             BigInt bi_b(other);
@@ -369,7 +376,22 @@ class BigInt {
             }
         }
         BigInt gcd(const BigInt &other) const {
+            std::cout << "gcd(" << *this << ", " << other << ")" << std::endl;
             if (other == BigInt(0, radix)) return *this;
             return other.gcd(*this % other);
+            // if (b == 0) return a
+            // return gcd(b, a % b)
+        }
+        std::string toString() const {
+            std::string res = "";
+            for (int i = 0; i < digits.size(); i++) {
+                // write code to transcript digits in int to letters (10 -> A)
+                if (digits[i] >= 10 && digits[i] <= 35) {
+                    res += (char)('A' + digits[i] - 10);
+                } else if (digits[i] >= 10) {
+                    res += '[' + std::to_string(digits[i]) + ']';
+                } else res += std::to_string(digits[i]);
+            }
+            return res;
         }
 };
