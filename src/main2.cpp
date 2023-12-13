@@ -3,7 +3,11 @@
 using namespace std;
 int main() {
     BigFrac x;
-    cin >> x;
+    int y;
+    cin >> x >> y;
+    x.print_num_den();
+    cout << "\n";
+    x.translate(y);
     x.print_num_den();
     // z.print();
 }

@@ -37,11 +37,11 @@ class BigFrac {
             BigInt period_part_num = period;
             BigInt period_part_den = bi_radix.pow(float_part.digits.size()) * (bi_radix.pow(period.digits.size()) - BigInt(1, radix));
             // now we need to sum float_part_num / float_part_den and period_part_num / period_part_den
-            BigInt new_num = float_part_num * period_part_den + period_part_num * float_part_den;
-            BigInt new_den = float_part_den * period_part_den;
-            new_num.print();
+            BigInt new_num = has_period ? float_part_num * period_part_den + period_part_num * float_part_den : float_part_num;
+            BigInt new_den = has_period ? float_part_den * period_part_den : float_part_den;
+            // new_num.print();
             // std::cout << "/";
-            new_den.print();
+            // new_den.print();
             // std::cout << std::endl;
             // reduce the fractions on gcd() of them
             BigInt gcd = new_num.gcd(new_den);
@@ -150,6 +150,12 @@ class BigFrac {
             return is;
         }
         void print_num_den() {
+            if (isNegative) std::cout << "-";
             std::cout << num << " / " << den << std::endl;
+        }
+        void translate(int q) {
+            this->num = num.translate(q);
+            this->den = den.translate(q);
+            this->radix = q;
         }
 };

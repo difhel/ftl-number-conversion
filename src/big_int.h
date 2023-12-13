@@ -35,6 +35,7 @@ class BigInt {
         }
         // constructor with int and radix
         BigInt(int n, int radix) : radix(radix) {
+            this->digits = {};
             while (n) {
                 digits.push_back(n % radix);
                 n /= radix;
