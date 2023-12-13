@@ -10,6 +10,9 @@ class BigFrac {
     int radix;
     bool has_period;
     bool has_float_part;
+
+    BigInt num;
+    BigInt den;
     public:
         // default constructor
         BigFrac() {
@@ -21,9 +24,32 @@ class BigFrac {
             has_period = false;
             has_float_part = false;
             radix = 10;
+            num = BigInt();
+            den = BigInt(1);
         }
-        // full constructor
-        BigFrac(BigInt int_part, BigInt float_part, BigInt period, bool isNegative, bool has_period, bool has_float_part, int radix) : int_part(int_part), float_part(float_part), period(period), isNegative(isNegative), radix(radix), has_period(has_period), has_float_part(has_float_part) {}
+        // data constructor
+        BigFrac(BigInt int_part, BigInt float_part, BigInt period, bool isNegative, bool has_period, bool has_float_part, int radix) : int_part(int_part), float_part(float_part), period(period), isNegative(isNegative), radix(radix), has_period(has_period), has_float_part(has_float_part) {
+            // std::cout << "data constructor" << std::endl;
+            BigInt bi_radix = BigInt(radix, radix);
+            // now working with float part
+            BigInt float_part_num = float_part;
+            BigInt float_part_den = bi_radix.pow(float_part.digits.size());
+            BigInt period_part_num = period;
+            BigInt period_part_den = bi_radix.pow(float_part.digits.size()) * (bi_radix.pow(period.digits.size()) - BigInt(1, radix));
+            // now we need to sum float_part_num / float_part_den and period_part_num / period_part_den
+            BigInt new_num = float_part_num * period_part_den + period_part_num * float_part_den;
+            BigInt new_den = float_part_den * period_part_den;
+            new_num.print();
+            // std::cout << "/";
+            new_den.print();
+            // std::cout << std::endl;
+            // reduce the fractions on gcd() of them
+            BigInt gcd = new_num.gcd(new_den);
+            new_num = new_num / gcd;
+            new_den = new_den / gcd;
+            this->num = new_num + int_part * new_den;
+            this->den = new_den;
+        }
         // constructor without radix
         BigFrac(BigInt int_part, BigInt float_part, BigInt period, bool isNegative) : int_part(int_part), float_part(float_part), period(period), isNegative(isNegative), radix(10), has_period(true), has_float_part(true) {}
         // constructor without radix and isNegative
@@ -99,13 +125,7 @@ class BigFrac {
             }
             int_part = BigInt(stringToVectorInt(s, radix_int), radix_int);
 
-            this->int_part = int_part;
-            this->float_part = float_part;
-            this->period = period;
-            this->isNegative = isNegative;
-            this->radix = radix_int;
-            this->has_period = has_period;
-            this->has_float_part = has_float_part;
+            *this = BigFrac(int_part, float_part, period, isNegative, has_period, has_float_part, radix_int);
         }
 
         friend std::ostream& operator<<(std::ostream& os, const BigFrac& bf) {
@@ -128,5 +148,8 @@ class BigFrac {
             is >> s;
             bf = BigFrac(s);
             return is;
+        }
+        void print_num_den() {
+            std::cout << num << " / " << den << std::endl;
         }
 };

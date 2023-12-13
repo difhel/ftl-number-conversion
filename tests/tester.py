@@ -43,12 +43,13 @@ def run_python(run_cmd, input_data):
         return f.read().strip()
 
 def run_test(test, input_data):
-    _, _, exec_cmd, check_cmd, _, _ = test
+    test_name, _, exec_cmd, check_cmd, _, _ = test
     
     
     cpp_output = run_cpp(exec_cmd, input_data)
     python_output = run_python(check_cmd, input_data)
     if cpp_output != python_output:
+        print("WA on test", test_name)
         print(f"Input: {input_data}")
         print(f"Expected: {python_output}")
         print(f"Got: {cpp_output}")

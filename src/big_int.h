@@ -5,9 +5,9 @@
 #include "algo.h"
 
 class BigInt {
-    std::vector<int> digits;
-    int radix;
     public:
+        std::vector<int> digits;
+        int radix;
         // default constructor
         BigInt() : digits({0}), radix(10) {};
         // copy constructor
@@ -314,7 +314,7 @@ class BigInt {
                 bi_a = bi_a / radix;
             }
             BigInt res(new_digits, new_radix);
-            // res.normalize();
+            res.normalize();
             res.remove_leading_zeroes();
             return res;
         }
@@ -349,6 +349,16 @@ class BigInt {
             res.remove_leading_zeroes();
             return res;
         }
+        BigInt translate(int new_radix) const {
+            BigInt bi_a(*this);
+            bi_a.normalize();
+            bi_a.remove_leading_zeroes();
+            if (bi_a.radix == new_radix) return bi_a;
+            if (bi_a.radix == 10) return bi_a.translate_from_10(new_radix);
+            if (new_radix == 10) return bi_a.translate_to_10();
+            return bi_a.translate_to_10().translate_from_10(new_radix);
+
+        }
         void print() {
             for (int i = 0; i < digits.size(); i++) {
                 // write code to transcript digits in int to letters (10 -> A)
@@ -356,5 +366,9 @@ class BigInt {
                     std::cout << (char)('A' + digits[i] - 10);
                 } else std::cout << digits[i];
             }
+        }
+        BigInt gcd(const BigInt &other) const {
+            if (other == BigInt(0, radix)) return *this;
+            return other.gcd(*this % other);
         }
 };
