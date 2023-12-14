@@ -221,7 +221,7 @@ class BigInt {
         // write operator==
         bool operator==(const BigInt& other) const {
             if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
-            if (digits.size() != other.digits.size()) return false;
+            if (std::max(static_cast<int>(digits.size()), 1) != std::max(static_cast<int>(other.digits.size()), 1)) return false;
             for (int i = 0; i < digits.size(); i++) {
                 if (digits[i] != other.digits[i]) return false;
             }
@@ -280,12 +280,21 @@ class BigInt {
             res.remove_leading_zeroes();
             return res;
         }
+        BigInt simple_divide(const BigInt& other) const {
+            if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
+            if (other.toInt() == 0) throw std::invalid_argument("division by zero");
+            return BigInt(static_cast<int64_t>(this->toInt()) / other.toInt(), this->radix);
+        }
         // write operator/ (binary search for answer using operator*)
         BigInt operator/(const BigInt& other) const {
             // std::cout << "operator /" << std::endl;
             if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
             BigInt bi_a(*this);
             BigInt bi_b(other);
+            BigInt INT32_MAX_VALUE = BigInt(INT32_MAX, bi_a.radix);
+            if (bi_a < INT32_MAX_VALUE && bi_b < INT32_MAX_VALUE) {
+                return simple_divide(bi_b);
+            }
             bi_a.normalize();
             bi_b.normalize();
             bi_a.remove_leading_zeroes();
@@ -384,15 +393,23 @@ class BigInt {
                 } else std::cout << digits[i];
             }
         }
-        BigInt gcd(const BigInt &other) const {
+        BigInt gcd(BigInt &other) {
             // std::cout << "gcd(" << *this << ", " << other << ")" << std::endl;
-            if (other == BigInt(0, radix)) return *this;
-            return other.gcd(*this % other);
+            BigInt bi_a = *this;
+            BigInt bi_b = other;
+            while (bi_b != BigInt(0, bi_a.radix)) {
+                BigInt temp = bi_b;
+                bi_b = bi_a % bi_b;
+                bi_a = temp;
+            }
+            *this = *this / bi_a;
+            other = other / bi_a;
+            return bi_a;
             // if (b == 0) return a
             // return gcd(b, a % b)
         }
         std::string toString() const {
-            std::cout << "to string on bigint" << std::endl;
+            // std::cout << "to string on bigint" << std::endl;
             std::string res = "";
             for (int i = 0; i < digits.size(); i++) {
                 // write code to transcript digits in int to letters (10 -> A)

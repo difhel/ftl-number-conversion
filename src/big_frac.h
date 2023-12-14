@@ -37,15 +37,11 @@ class BigFrac {
             BigInt period_part_num = period;
             BigInt period_part_den = bi_radix.pow(float_part.digits.size()) * (bi_radix.pow(period.digits.size()) - BigInt(1, radix));
 
-            BigInt gcd = float_part_num.gcd(float_part_den);
+            float_part_num.gcd(float_part_den);
             std::cout << "got gcd" << std::endl;
-            float_part_num = float_part_num / gcd;
-            float_part_den = float_part_den / gcd;
 
-            gcd = period_part_num.gcd(period_part_den);
+            period_part_num.gcd(period_part_den);
             std::cout << "got gcd" << std::endl;
-            period_part_num = period_part_num / gcd;
-            period_part_den = period_part_den / gcd;
 
             // now we need to sum float_part_num / float_part_den and period_part_num / period_part_den
             BigInt new_num = has_period ? float_part_num * period_part_den + period_part_num * float_part_den : float_part_num;
@@ -55,12 +51,16 @@ class BigFrac {
             // new_den.print();
             // std::cout << std::endl;
             // reduce the fractions on gcd() of them
-            gcd = new_num.gcd(new_den);
+            new_num.gcd(new_den);
             std::cout << "got gcd" << std::endl;
-            new_num = new_num / gcd;
-            new_den = new_den / gcd;
             this->num = new_num + int_part * new_den;
             this->den = new_den;
+            if (new_den == BigInt(1, new_den.radix)) {
+                this->has_float_part = 0;
+            }
+            if (period_part_den == BigInt(1, new_den.radix)) {
+                this->has_period = 0;
+            }
         }
         // constructor without radix
         BigFrac(BigInt int_part, BigInt float_part, BigInt period, bool isNegative) : int_part(int_part), float_part(float_part), period(period), isNegative(isNegative), radix(10), has_period(true), has_float_part(true) {}
@@ -190,7 +190,7 @@ class BigFrac {
 
                 remainder = remainder * bi_radix;
                 s += (remainder / den).toString();
-                std::cout << s << std::endl;
+                // std::cout << s << std::endl;
                 remainder = remainder % den;
             }
             if (remainder != BigInt(0, remainder.radix)) {
