@@ -221,9 +221,15 @@ class BigInt {
         // write operator==
         bool operator==(const BigInt& other) const {
             if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
-            if (std::max(static_cast<int>(digits.size()), 1) != std::max(static_cast<int>(other.digits.size()), 1)) return false;
-            for (int i = 0; i < digits.size(); i++) {
-                if (digits[i] != other.digits[i]) return false;
+            BigInt bi_a = *this;
+            BigInt bi_b = other;
+            if (bi_a.digits.size() == 0) bi_a.digits.push_back(0);
+            if (bi_b.digits.size() == 0) bi_b.digits.push_back(0);
+            bi_a.remove_leading_zeroes();
+            bi_b.remove_leading_zeroes();
+            if (bi_a.digits.size() != bi_b.digits.size()) return false;
+            for (int i = 0; i < bi_a.digits.size(); i++) {
+                if (bi_a.digits[i] != bi_b.digits[i]) return false;
             }
             return true;
         }

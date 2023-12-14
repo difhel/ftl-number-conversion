@@ -7,6 +7,7 @@
 #include <algo.h>
 #include <dialog.h>
 #include <callbacks.h>
+#include "files.h"
 #define MALLOC_CHECK_ 2
 
 std::map<std::string, Button*> buttons;
@@ -69,6 +70,8 @@ void parseInputs() {
 
 int main() {
     std::locale::global(std::locale("C.utf8"));
+    FileWorker fileWorkerInput("../input.txt");
+    FileWorker fileWorkerOutput("../output.txt");
 
     Layout layout;
     layout.addElement(DialogElement("Label", "Universal convertor", "label_1"));
@@ -78,7 +81,8 @@ int main() {
     layout.addElement(DialogElement("TextEditor", "", "p"));
     layout.addElement(DialogElement("Label", "Enter q:", "label_4"));
     layout.addElement(DialogElement("TextEditor", "", "q"));
-    layout.addElement(DialogElement("Button", "Run", "run_button"));
+    layout.addElement(DialogElement("Button", "Process", "run_button"));
+    layout.addElement(DialogElement("Button", "Process number from file", "run_from_file_button"));
 
     sf::RenderWindow window(sf::VideoMode(400, 600), config::window::title);
     sf::Font font;
@@ -109,7 +113,19 @@ int main() {
                         std::cout << button.first + " button pressed" << std::endl;
                         if (button.first == "run_button") {
                             parseInputs();
-                            std::string res = callback_test_dialog(window, inputs_data);
+                            std::string res = callback_from_inputs(window, inputs_data, fileWorkerOutput);
+
+                            Layout layout;
+                            layout.addElement(DialogElement("Label", "Result:", "label_1"));
+                            layout.addElement(DialogElement("Label", res, "result"));
+                            Dialog dialog("Insert substring in line", layout, callback_empty, window);
+                            dialog.generate();
+                            dialog.show();
+                            dialog.start_polling();
+                        }
+                        if (button.first == "run_from_file_button") {
+                            parseInputs();
+                            std::string res = callback_from_file(window, inputs_data, fileWorkerInput, fileWorkerOutput);
 
                             Layout layout;
                             layout.addElement(DialogElement("Label", "Result:", "label_1"));

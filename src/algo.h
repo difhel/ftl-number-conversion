@@ -8,9 +8,10 @@
 
 // exception for invalid data with message "invalid number provided"
 class InvalidNumberException : public std::exception {
-    const char* what() const throw() {
-        return "invalid number provided";
-    }
+    public:
+        const char* what() const throw() {
+            return "invalid number provided";
+        }
 };
 
 bool isDigit(char c) {
