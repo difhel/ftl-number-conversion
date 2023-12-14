@@ -26,7 +26,7 @@ class BigInt {
             digits = stringToVectorInt(str, radix);
         }
         // constructor with int
-        BigInt(int n) : radix(10) {
+        BigInt(int64_t n) : radix(10) {
             while (n) {
                 digits.push_back(n % 10);
                 n /= 10;
@@ -35,7 +35,7 @@ class BigInt {
             std::reverse(digits.begin(), digits.end());
         }
         // constructor with int and radix
-        BigInt(int n, int radix) : radix(radix) {
+        BigInt(int64_t n, int radix) : radix(radix) {
             this->digits = {};
             while (n) {
                 digits.push_back(n % radix);
@@ -164,6 +164,11 @@ class BigInt {
             while (digits.size() > 1 && digits[0] == 0) digits.erase(digits.begin());
             if (digits.size() == 0) digits.push_back(0);
         }
+        // write simple operator* algorithm (for small numbers)
+        BigInt simple_multiply(const BigInt& other) const {
+            if (radix != other.radix) throw std::invalid_argument("radixes are not equal");
+            return BigInt(static_cast<int64_t>(this->toInt()) * other.toInt(), this->radix);
+        }
         // write operator* using Karatsuba algorithm
         BigInt operator*(const BigInt& other) const {
             // std::cout << "operator *" << std::endl;
@@ -171,6 +176,10 @@ class BigInt {
             // std::vector<int> res;
             BigInt bi_a(*this);
             BigInt bi_b(other);
+            BigInt INT32_MAX_VALUE = BigInt(INT32_MAX, bi_a.radix);
+            if (bi_a <= INT32_MAX_VALUE && bi_b <= INT32_MAX_VALUE) {
+                return this->simple_multiply(other);
+            }
             // bi_a.normalize();
             // bi_b.normalize();
             // bi_a.remove_leading_zeroes();
@@ -267,8 +276,8 @@ class BigInt {
                 res.digits.push_back(cur / n);
                 carry = cur % n;
             }
-            // res.normalize();
-            // res.remove_leading_zeroes();
+            res.normalize();
+            res.remove_leading_zeroes();
             return res;
         }
         // write operator/ (binary search for answer using operator*)
@@ -297,7 +306,7 @@ class BigInt {
             }
             return l;
         }
-        int toInt() {
+        int toInt() const {
             // WARN!!! This may cause overflow
             int res = 0;
             for (int i = 0; i < digits.size(); i++) {
@@ -376,13 +385,14 @@ class BigInt {
             }
         }
         BigInt gcd(const BigInt &other) const {
-            std::cout << "gcd(" << *this << ", " << other << ")" << std::endl;
+            // std::cout << "gcd(" << *this << ", " << other << ")" << std::endl;
             if (other == BigInt(0, radix)) return *this;
             return other.gcd(*this % other);
             // if (b == 0) return a
             // return gcd(b, a % b)
         }
         std::string toString() const {
+            std::cout << "to string on bigint" << std::endl;
             std::string res = "";
             for (int i = 0; i < digits.size(); i++) {
                 // write code to transcript digits in int to letters (10 -> A)
