@@ -5,6 +5,13 @@ This workshop project focuses on implementing a number conversion system that su
 
 The project also features a custom implementation of the `BigInteger` and `BigFloat` classes. These classes utilize the Karatsuba algorithm and handle very large numbers without sacrificing precision.
 
+Supports:
+- letters (`A` stands for 10, `B` stands for 11 and so on)
+- big digits (`[132]` stands for digit 132)
+- periodic fractions (`0.123(456)`)
+- parser supports radixes with `_` (`0.12_3` will be parsed in 3rd radix)
+- exception-based logic - will throw `std::invalid_argument` or `InvalidNumberException` if something goes wrong
+
 ## Run
 1. Clone the repo:
 ```bash
@@ -16,3 +23,5 @@ git clone https://github.com/difhel/ftl-number-conversion
 ## Screenshots
 
 ![Screenshot](./screenshots/1.png)
+
+![Screenshot](./screenshots/2.png)
